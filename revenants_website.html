@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVENANTS — On-Chain Dark Pixel NFT</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+:root {
+  --blood: #8B0000;
+  --crimson: #AA1111;
+  --ember: #CC3300;
+  --bone: #C8B890;
+  --ash: #6A6A6A;
+  --void: #050508;
+  --dark: #0A0A0F;
+  --panel: #0D0D14;
+  --border: #1A1A2A;
+  --glow: rgba(139,0,0,0.4);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--bone);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* NOISE TEXTURE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--blood); }
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 40px 20px;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139,0,0,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(80,0,0,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(80,0,0,0.1) 0%, transparent 60%);
+}
+
+/* Animated blood drips */
+.drip {
+  position: absolute;
+  top: -20px;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--blood), transparent);
+  animation: drip 6s ease-in infinite;
+  opacity: 0.4;
+}
+.drip:nth-child(1) { left: 10%; height: 180px; animation-delay: 0s; }
+.drip:nth-child(2) { left: 25%; height: 120px; animation-delay: 1.5s; }
+.drip:nth-child(3) { left: 50%; height: 200px; animation-delay: 3s; }
+.drip:nth-child(4) { left: 75%; height: 140px; animation-delay: 0.8s; }
+.drip:nth-child(5) { left: 90%; height: 160px; animation-delay: 2.2s; }
+
+@keyframes drip {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0.6; }
+  50% { transform: scaleY(1); opacity: 0.4; }
+  100% { transform: scaleY(1) translateY(100px); opacity: 0; }
+}
+
+.skull-row {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  opacity: 0.08;
+  overflow: hidden;
+}
+
+.hero-eyebrow {
+  font-family: 'Crimson Pro', serif;
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  color: var(--blood);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: fadeUp 1s ease both;
+}
+
+.hero-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(52px, 12vw, 110px);
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-shadow: 
+    0 0 60px rgba(139,0,0,0.8),
+    0 0 120px rgba(139,0,0,0.4),
+    0 2px 0 rgba(0,0,0,0.8);
+  animation: fadeUp 1s ease 0.2s both;
+  position: relative;
+}
+
+.hero-title span {
+  display: block;
+  background: linear-gradient(180deg, #ffffff 0%, #C8B890 40%, #8B4040 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-divider {
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--blood), transparent);
+  margin: 28px 0;
+  animation: fadeUp 1s ease 0.4s both;
+}
+
+.hero-tagline {
+  font-size: clamp(15px, 2.5vw, 20px);
+  color: #9A8870;
+  font-style: italic;
+  text-align: center;
+  max-width: 500px;
+  line-height: 1.6;
+  animation: fadeUp 1s ease 0.6s both;
+  font-weight: 300;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  margin: 40px 0;
+  animation: fadeUp 1s ease 0.8s both;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 28px;
+  color: var(--bone);
+  display: block;
+  text-shadow: 0 0 20px rgba(139,0,0,0.5);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--ash);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 4px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 1s ease 1s both;
+}
+
+.btn-primary {
+  background: var(--blood);
+  color: #fff;
+  border: none;
+  padding: 14px 36px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+
+.btn-primary:hover { background: var(--crimson); box-shadow: 0 0 30px var(--glow); }
+.btn-primary:hover::before { transform: translateX(100%); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--bone);
+  border: 1px solid var(--border);
+  padding: 14px 36px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.btn-secondary:hover {
+  border-color: var(--blood);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(139,0,0,0.2);
+}
+
+/* ===== SAMPLE SECTION ===== */
+.section {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(24px, 5vw, 42px);
+  color: #fff;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  text-shadow: 0 0 40px rgba(139,0,0,0.4);
+}
+
+.section-sub {
+  color: var(--ash);
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.revenant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.revenant-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 10px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.revenant-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(139,0,0,0.05) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.revenant-card:hover {
+  border-color: var(--blood);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(139,0,0,0.3);
+}
+
+.revenant-card:hover::before { opacity: 1; }
+
+.revenant-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.card-id {
+  color: var(--blood);
+  font-size: 10px;
+  font-family: 'Cinzel Decorative', serif;
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+
+/* ===== TRAITS SECTION ===== */
+.traits-section {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 80px 24px;
+}
+
+.traits-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.trait-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.trait-card {
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: relative;
+}
+
+.trait-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--blood), transparent);
+}
+
+.trait-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 11px;
+  color: var(--blood);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.trait-count {
+  font-size: 32px;
+  font-family: 'Cinzel Decorative', serif;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(139,0,0,0.4);
+}
+
+.trait-items {
+  font-size: 12px;
+  color: #5A5A6A;
+  line-height: 1.8;
+}
+
+/* ===== MINT SECTION ===== */
+.mint-section {
+  padding: 100px 24px;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mint-box {
+  border: 1px solid var(--border);
+  padding: 48px;
+  position: relative;
+  background: var(--panel);
+}
+
+.mint-box::before {
+  content: '⛧';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel);
+  padding: 0 12px;
+  font-size: 24px;
+  color: var(--blood);
+}
+
+.mint-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+  font-size: 14px;
+  color: var(--ash);
+}
+
+.mint-price-row:last-of-type {
+  border-bottom: none;
+  margin-bottom: 32px;
+}
+
+.mint-price-val {
+  color: var(--bone);
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 13px;
+}
+
+.mint-input {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--border);
+  border: 1px solid #2A2A3A;
+  color: var(--bone);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.qty-btn:hover { background: var(--blood); border-color: var(--blood); }
+
+.qty-display {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 24px;
+  color: #fff;
+  width: 60px;
+  text-align: center;
+}
+
+.mint-total {
+  font-size: 13px;
+  color: var(--ash);
+  margin-bottom: 24px;
+  letter-spacing: 0.1em;
+}
+
+.mint-total span { color: var(--bone); }
+
+.contract-info {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: #3A3A4A;
+  letter-spacing: 0.05em;
+  word-break: break-all;
+}
+
+.contract-info a {
+  color: var(--blood);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contract-info a:hover { color: var(--crimson); }
+
+/* ===== FOOTER ===== */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.footer-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 20px;
+  color: var(--blood);
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(139,0,0,0.4);
+}
+
+.footer-sub {
+  font-size: 12px;
+  color: #2A2A3A;
+  letter-spacing: 0.3em;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.4; }
+  94% { opacity: 1; }
+  96% { opacity: 0.6; }
+  97% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="drip"></div>
+  <div class="drip"></div>
+  <div class="drip"></div>
+  <div class="drip"></div>
+  <div class="drip"></div>
+
+  <p class="hero-eyebrow">⛧ &nbsp; Ethereum · Fully On-Chain · 6,666 Supply &nbsp; ⛧</p>
+
+  <h1 class="hero-title"><span>REVENANTS</span></h1>
+
+  <div class="hero-divider"></div>
+
+  <p class="hero-tagline">"They died. They clawed their way back through the chain. Now they hunger for what was taken."</p>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">6,666</span>
+      <span class="stat-label">Total Supply</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">FREE</span>
+      <span class="stat-label">5,666 Mints</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">On-Chain</span>
+    </div>
+  </div>
+
+  <div class="hero-buttons">
+    <a href="#mint" class="btn-primary">⛧ &nbsp; Claim Your Revenant</a>
+    <a href="https://opensea.io/collection/revenants" target="_blank" class="btn-secondary">View on OpenSea</a>
+  </div>
+</section>
+
+<!-- SAMPLE REVENANTS -->
+<div class="section">
+  <div class="section-header">
+    <p class="section-sub">The Risen</p>
+    <h2 class="section-title">Sample Revenants</h2>
+  </div>
+  <div class="revenant-grid" id="sampleGrid"></div>
+</div>
+
+<!-- TRAITS -->
+<div class="traits-section">
+  <div class="traits-inner">
+    <div class="section-header">
+      <p class="section-sub">1,234,440 Combinations</p>
+      <h2 class="section-title">Traits</h2>
+    </div>
+    <div class="trait-grid">
+      <div class="trait-card">
+        <p class="trait-name">Head</p>
+        <p class="trait-count">7</p>
+        <p class="trait-items">Round · Long · Wide · Skull · Deformed · Horned · Melting</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Body</p>
+        <p class="trait-count">7</p>
+        <p class="trait-items">Hunched · Tall · Crooked · Bloated · Skeletal · Floating · Crouching</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Arms</p>
+        <p class="trait-count">7</p>
+        <p class="trait-items">LongClaws · Stumps · Tentacles · Bone · Skeletal · Whip · Cloak</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Skin</p>
+        <p class="trait-count">14</p>
+        <p class="trait-items">Rotting · Pale · Burnt · Frozen · Cursed · Plague · Crimson · Spectral · Abyssal · Infernal · Toxic · Mossy · Ashen · Bloated</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Eyes</p>
+        <p class="trait-count">6</p>
+        <p class="trait-items">Yellow · Hellfire · Blood · Toxic · Soulless · Cursed</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Mouth</p>
+        <p class="trait-count">5</p>
+        <p class="trait-items">WidenGrin · Screaming · Stitched · Fangs · Beak</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Aura</p>
+        <p class="trait-count">6</p>
+        <p class="trait-items">None · SoulWisps · BloodRain · CursedFlames · ToxicGas · Lightning</p>
+      </div>
+      <div class="trait-card">
+        <p class="trait-name">Atmosphere</p>
+        <p class="trait-count">6</p>
+        <p class="trait-items">Graveyard · Catacombs · Swamp · Bloodmoon · Crypt · Hellmouth</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MINT -->
+<div class="mint-section" id="mint">
+  <div class="section-header">
+    <p class="section-sub">Rise From The Chain</p>
+    <h2 class="section-title">Mint</h2>
+  </div>
+  <div class="mint-box">
+    <div class="mint-price-row">
+      <span>Free Mint (1 per wallet)</span>
+      <span class="mint-price-val">FREE</span>
+    </div>
+    <div class="mint-price-row">
+      <span>Paid Mint</span>
+      <span class="mint-price-val">0.0001 ETH</span>
+    </div>
+    <div class="mint-price-row">
+      <span>Royalty</span>
+      <span class="mint-price-val">5%</span>
+    </div>
+
+    <div class="mint-input">
+      <button class="qty-btn" onclick="changeQty(-1)">−</button>
+      <span class="qty-display" id="qtyDisplay">1</span>
+      <button class="qty-btn" onclick="changeQty(1)">+</button>
+    </div>
+
+    <p class="mint-total">Total: <span id="mintTotal">FREE</span></p>
+
+    <a href="https://etherscan.io/address/0x1a5b737BB90B7875AaC47A8CEC4648cD032921E5#writeContract" 
+       target="_blank" class="btn-primary" style="width:100%;text-align:center;display:block;">
+      ⛧ &nbsp; Mint on Etherscan
+    </a>
+
+    <div class="contract-info">
+      Contract: <a href="https://etherscan.io/address/0x1a5b737BB90B7875AaC47A8CEC4648cD032921E5" target="_blank">
+        0x1a5b737BB90B7875AaC47A8CEC4648cD032921E5
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-title">⛧ REVENANTS ⛧</p>
+  <p class="footer-sub">RVNT · Ethereum Mainnet · Fully On-Chain · No IPFS · Forever</p>
+</footer>
+
+<script>
+// Qty logic
+let qty = 1;
+function changeQty(delta) {
+  qty = Math.max(1, Math.min(20, qty + delta));
+  document.getElementById('qtyDisplay').textContent = qty;
+  const total = qty === 1 ? 'FREE + gas' : (qty * 0.0001).toFixed(4) + ' ETH + gas';
+  document.getElementById('mintTotal').textContent = total;
+}
+
+// Generate sample revenants
+function rng(seed) {
+  let h = (seed * 2654435761) >>> 0;
+  return () => {
+    h = ((h ^ (h >>> 16)) * 2246822507) >>> 0;
+    h = ((h ^ (h >>> 13)) * 3266489909) >>> 0;
+    h = (h ^ (h >>> 16)) >>> 0;
+    return h / 0xffffffff;
+  };
+}
+
+const SKINS = [
+  { m:"#4A6B3A", d:"#2A4A1A", l:"#7A9B5A" },
+  { m:"#7A6B5A", d:"#4A3B2A", l:"#A89B7A" },
+  { m:"#A5A5B5", d:"#6A6A7A", l:"#D0D0E0" },
+  { m:"#3A2A1A", d:"#1A0A0A", l:"#5A3A2A" },
+  { m:"#6A8AAA", d:"#3A5A7A", l:"#A0C0DD" },
+  { m:"#6A3A8A", d:"#3A1A5A", l:"#9A6ABA" },
+  { m:"#7A8A2A", d:"#4A5A0A", l:"#AABA5A" },
+  { m:"#7A1A2A", d:"#4A0A0A", l:"#AA3A4A" },
+  { m:"#8080CC", d:"#4040AA", l:"#C0C0FF" },
+  { m:"#0A0A1A", d:"#050510", l:"#2A2A5A" },
+  { m:"#AA2200", d:"#6A0A00", l:"#EE4400" },
+  { m:"#44AA00", d:"#226600", l:"#88EE00" },
+  { m:"#3A5A2A", d:"#1A3A0A", l:"#5A8A3A" },
+  { m:"#6A6A6A", d:"#3A3A3A", l:"#9A9A9A" }
+];
+
+const EYES = [
+  "#FFFF00","#FF4400","#FF0000","#00FF44","#FFFFFF","#BB44FF"
+];
+
+const ATMOS = [
+  { c:"#080814", g:"#14142A" },
+  { c:"#120805", g:"#1E1410" },
+  { c:"#081408", g:"#102010" },
+  { c:"#120408", g:"#1E0812" },
+  { c:"#080808", g:"#161616" },
+  { c:"#120805", g:"#1E1008" }
+];
+
+function R(x,y,w,h,c){ return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`; }
+
+function genRevenant(id) {
+  const r = rng(id * 13337 + 777);
+  const si = Math.floor(r() * 14);
+  const ai = Math.floor(r() * 6);
+  const ei = Math.floor(r() * 6);
+  const ht = Math.floor(r() * 7);
+  const bt = Math.floor(r() * 7);
+  const at = Math.floor(r() * 7);
+
+  const sk = SKINS[si];
+  const atmo = ATMOS[ai];
+  const ec = EYES[ei];
+
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" shape-rendering="crispEdges">`;
+  
+  // BG
+  s += R(0,0,240,240,atmo.c) + R(0,195,240,45,atmo.g);
+  s += `<circle cx="192" cy="42" r="18" fill="#C8B890" opacity="0.7"/>`;
+  s += R(35,198,18,22,'#222') + R(185,200,20,20,'#222');
+
+  // Body
+  const bodies = [
+    () => R(65,148,110,68,sk.d)+R(70,152,100,54,sk.m)+R(70,152,100,7,sk.l)+R(98,132,44,22,sk.d),
+    () => R(92,148,56,92,sk.d)+R(97,152,46,84,sk.m)+R(118,158,4,74,sk.d),
+    () => R(80,148,78,72,sk.d)+R(85,152,68,64,sk.m)+R(140,166,26,52,sk.d),
+    () => R(54,148,132,72,sk.d)+R(60,152,120,62,sk.m)+R(54,176,14,42,sk.m)+R(172,176,14,42,sk.m),
+    () => R(96,148,48,82,sk.d)+R(118,148,4,82,sk.l)+R(97,154,46,2,sk.l)+R(97,168,46,2,sk.l)+R(97,182,46,2,sk.l),
+    () => R(75,148,90,60,sk.d)+R(80,152,80,52,sk.m)+R(90,206,6,30,sk.m)+R(120,206,6,30,sk.m)+R(148,206,6,30,sk.m),
+    () => R(60,168,120,50,sk.d)+R(66,172,108,42,sk.m)+R(60,148,20,26,sk.d)+R(160,148,20,26,sk.d)
+  ];
+  s += bodies[bt]();
+
+  // Arms
+  const arms = [
+    () => R(20,156,70,14,sk.d)+R(150,156,70,14,sk.d)+R(20,170,5,20,sk.l)+R(40,170,5,20,sk.l)+R(155,170,5,20,sk.l)+R(175,170,5,20,sk.l),
+    () => R(64,154,28,18,sk.d)+R(148,154,28,18,sk.d)+R(62,156,7,14,'#8B0000')+R(171,156,7,14,'#8B0000'),
+    () => R(48,156,6,40,sk.m)+R(66,156,6,40,sk.m)+R(162,156,6,40,sk.m)+R(176,156,6,40,sk.m),
+    () => R(38,154,44,8,sk.l)+R(38,162,10,38,sk.l)+R(158,154,44,8,sk.l)+R(192,162,10,38,sk.l),
+    () => R(48,152,12,58,sk.l)+R(44,152,20,7,sk.l)+R(180,152,12,58,sk.l)+R(176,152,20,7,sk.l),
+    () => R(64,156,20,10,sk.d)+R(6,150,10,5,sk.l)+R(30,153,10,5,sk.l)+R(156,156,20,10,sk.d)+R(182,150,10,5,sk.l)+R(206,153,10,5,sk.l),
+    () => R(40,152,160,80,sk.d)+R(46,158,148,68,sk.m)+R(116,150,4,78,sk.d)
+  ];
+  s += arms[at]();
+
+  // Head
+  const heads = [
+    () => R(90,85,60,55,sk.d)+R(95,90,50,45,sk.m)+R(96,103,14,10,'#000')+R(130,103,14,10,'#000')+R(99,106,8,5,ec)+R(133,106,8,5,ec)+R(114,118,12,7,'#000'),
+    () => R(100,72,40,74,sk.d)+R(104,76,32,66,sk.m)+R(103,92,12,8,'#000')+R(125,92,12,8,'#000')+R(106,95,6,4,ec)+R(128,95,6,4,ec)+R(116,110,8,14,'#000'),
+    () => R(72,99,96,48,sk.d)+R(76,103,88,40,sk.m)+R(76,113,16,10,'#000')+R(148,113,16,10,'#000')+R(79,116,10,5,ec)+R(151,116,10,5,ec)+R(108,126,24,7,'#000'),
+    () => R(90,82,60,58,'#C8BCA0')+R(94,86,52,50,'#D8CEB0')+R(93,98,18,16,'#000')+R(129,98,18,16,'#000')+R(96,101,12,10,ec)+R(132,101,12,10,ec)+R(111,118,18,10,'#000'),
+    () => R(84,97,55,52,sk.d)+R(88,101,46,44,sk.m)+R(132,87,24,30,sk.d)+R(134,91,20,22,sk.m)+R(87,119,13,10,'#000')+R(116,115,14,14,'#000')+R(90,122,7,5,ec)+R(119,118,8,8,ec),
+    () => R(90,93,60,54,sk.d)+R(94,97,52,46,sk.m)+R(82,75,10,28,sk.d)+R(72,61,6,18,sk.d)+R(148,75,10,28,sk.d)+R(162,61,6,18,sk.d)+R(70,57,6,6,ec)+R(164,57,6,6,ec)+R(96,107,14,10,'#000')+R(130,107,14,10,'#000')+R(99,110,8,5,ec)+R(133,110,8,5,ec),
+    () => R(88,89,64,54,sk.d)+R(92,93,56,46,sk.m)+R(98,137,8,20,sk.m)+R(112,139,10,16,sk.m)+R(130,137,8,22,sk.m)+R(96,103,14,10,'#000')+R(130,103,14,10,'#000')+R(99,106,8,5,ec)+R(133,106,8,5,ec)
+  ];
+  s += heads[ht]();
+
+  s += `</svg>`;
+  return s;
+}
+
+const grid = document.getElementById('sampleGrid');
+for (let i = 0; i < 18; i++) {
+  const svg = genRevenant(i * 137 + 42);
+  const card = document.createElement('div');
+  card.className = 'revenant-card';
+  card.innerHTML = svg + `<div class="card-id">RVNT #${String(i).padStart(4,'0')}</div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>
